@@ -1,36 +1,43 @@
-"""Database models for the blog assignment.
-
-The attributes are left intentionally light so students can practice
-adding the proper columns, relationships, and helper methods.
-"""
+"""Database models for the Flask + SQLAlchemy assignment."""
 from app import db
 
 
 class User(db.Model):
-    """Represents a user who can author posts."""
-
-    __tablename__ = "users"
-
-    # TODO: Add id primary key, username (unique + required), and
-    # a relationship to ``Post`` named ``posts``.
+    """User model - represents a blog user/author."""
+    
+    __tablename__ = 'users'
+    
+    # Primary key
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String)  # Students should customize constraints
-
-    def __repr__(self):  # pragma: no cover - convenience repr
-        return f"<User {getattr(self, 'username', None)}>"
+    
+    # Username must be unique and required
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    
+    # Relationship: one user has many posts
+    # backref='user' creates a 'user' attribute on Post objects
+    # lazy=True means posts are loaded only when accessed
+    posts = db.relationship('Post', backref='user', lazy=True)
+    
+    def __repr__(self):
+        return f'<User {self.username}>'
 
 
 class Post(db.Model):
-    """Represents a blog post written by a user."""
-
-    __tablename__ = "posts"
-
-    # TODO: Add id primary key, title, content, foreign key to users.id,
-    # and a relationship back to the ``User`` model.
+    """Post model - represents a blog post."""
+    
+    __tablename__ = 'posts'
+    
+    # Primary key
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String)
-    content = db.Column(db.Text)
-    user_id = db.Column(db.Integer)
-
-    def __repr__(self):  # pragma: no cover - convenience repr
-        return f"<Post {getattr(self, 'title', None)}>"
+    
+    # Post content
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    
+    # Foreign key to users table
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # The 'user' attribute is automatically created by the backref in User.posts
+    
+    def __repr__(self):
+        return f'<Post {self.title}>'
